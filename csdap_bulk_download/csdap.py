@@ -32,6 +32,7 @@ class CsdapClient:
             f"{self.auth_endpoint}/",
             params={"redirect_uri": "script"},
             allow_redirects=False,
+            verify=False,
         )
         if response.status_code not in (302, 307):
             raise AuthError(
@@ -51,6 +52,7 @@ class CsdapClient:
             edl_url,
             auth=HTTPBasicAuth(username, password),
             allow_redirects=False,
+            verify=False,
         )
         if not response.ok:
             raise AuthError(
@@ -95,7 +97,7 @@ class CsdapClient:
 
         # Exchange code for token
         logger.debug("Exchanging authorization code for access token...")
-        response = requests.post(f"{self.auth_endpoint}/token", data={"code": code})
+        response = requests.post(f"{self.auth_endpoint}/token", data={"code": code}, verify=False)
         response.raise_for_status()
         token = response.json()["access_token"]
         return token
@@ -120,7 +122,7 @@ class CsdapClient:
         base_path = f"v{endpoint_version}/download"
         url = f"{self.csdap_api_url}/{base_path}/{path.as_posix()}"
         headers = {"authorization": f"Bearer {token}"}
-        with requests.get(url, stream=True, headers=headers) as response:
+        with requests.get(url, stream=True, headers=headers, verify=False,) as response:
             if not response.ok:
                 try:
                     msg = response.json()["detail"]
